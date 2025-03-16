@@ -52,8 +52,8 @@ hdvector_init_random(HDVector *vector, size_t count)
     UTIL_ASSERT(vector);
     for (size_t v = 0; v < count; v++) {
         for (size_t i = 0; i < ARRLEN(vector->data); i++) {
-            uint64_t msw = xorshift128(rng_state);
-            uint64_t lsw = xorshift128(rng_state);
+            uint64_t msw = util_xorshift128(rng_state);
+            uint64_t lsw = util_xorshift128(rng_state);
             vector[v].data[i] = msw << 32 | lsw;
         }
     }
@@ -164,7 +164,7 @@ hdvector_distance(HDVector *a, HDVector *b)
         uint64_t word = a->data[i] ^ b->data[i];
         uint32_t most = (word >> 32) & 0xFFFFFFFF;
         uint32_t least = word & 0xFFFFFFFF;
-        diff += bitcount(most) + bitcount(least);
+        diff += util_bitcount(most) + util_bitcount(least);
     }
     return (float)diff / (float)DIMENSIONS;
 }

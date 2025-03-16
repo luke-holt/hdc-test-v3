@@ -94,7 +94,7 @@ void util_log(const char *tag, const char *fmt, ...) {
     fprintf(stderr, "\n");
 }
 
-uint32_t xorshift128(uint32_t *state) {
+uint32_t util_xorshift128(uint32_t *state) {
     uint32_t t, s;
     t = state[3];
     s = state[0];
@@ -107,7 +107,7 @@ uint32_t xorshift128(uint32_t *state) {
     return state[0];
 }
 
-uint32_t bitcount(uint32_t word) {
+uint32_t util_bitcount(uint32_t word) {
     word = word - ((word >> 1) & 0x55555555);
     word = (word & 0x33333333) + ((word >> 2) & 0x33333333);
     word = ((word + (word >> 4) & 0x0F0F0F0F) * 0x01010101) >> 24;
