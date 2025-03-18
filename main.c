@@ -9,7 +9,9 @@
 #define UTIL_IMPLEMENTATION
 #include "util.h"
 
-int next_most_likely(HDVector *profile, HDVector *symbols, int nsymbols, int a, int b) {
+int
+next_most_likely(HDVector *profile, HDVector *symbols, int nsymbols, int a, int b)
+{
     HDVector v0;
     HDVector v1;
 
@@ -35,10 +37,21 @@ int next_most_likely(HDVector *profile, HDVector *symbols, int nsymbols, int a, 
     return idx;
 }
 
+void
+help(const char *progname) {
+    util_log("INFO", "Usage: %s <text-file>", progname);
+}
+
 int
-main(void)
+main(int argc, char *argv[])
 {
-    const char *filename = "one-beer.txt";
+    if (argc != 2) {
+        help(argv[0]);
+        exit(1);
+    }
+
+    const char *filename = argv[1];
+
     String content; // text file content
     BytePairTable bpe_table; // bpe pair table
     BytePairData bpe_data; // bpe encoded data
@@ -59,13 +72,13 @@ main(void)
     util_log("INFO", "  reduced size: %zu", bpe_data.count);
     util_log("INFO", "  byte-pair table size: %zu", bpe_table.count);
 
+    // compute profile vector
+
     hdv_table_count = bpe_table.count;
     hdv_symbol_table = malloc(sizeof(*hdv_symbol_table)*hdv_table_count);
     UTIL_ASSERT(hdv_symbol_table);
 
     hdvector_init_random(hdv_symbol_table, hdv_table_count);
-
-    // for each trigram
     memset(&hdv_profile, 0, sizeof(hdv_profile));
     for (int i = 0; i < bpe_data.count-2; i++) {
         HDVector v0, v1, v2;
@@ -85,7 +98,7 @@ main(void)
 
     hdvector_sum_to_vector(&hdv_sum_vector, &hdv_profile, bpe_data.count/2);
 
-    util_log("INFO", "combined all trigrams into profile vector");
+    util_log("INFO", "computed profile vector");
 
     char line[256] = {0};
 
@@ -103,7 +116,7 @@ main(void)
                 da_append(&bpe_encoded_data, a);
                 da_append(&bpe_encoded_data, b);
 
-                for (int i = 0; i < 1000; i++) {
+                for (int i = 0; i < 100; i++) {
                     int next = next_most_likely(&hdv_profile, hdv_symbol_table, hdv_table_count, a, b);
 
                     if (BETWEEN(next, 32, 126) || next >= 0x100)
@@ -122,8 +135,7 @@ main(void)
                         decoded.items[i] = ' ';
                 }
 
-                util_log("INFO", "output: %*s", decoded.count, decoded.items);
-                // util_hexdump(decoded.items, decoded.count);
+                util_log("INFO", "%*s", decoded.count, decoded.items);
             }
         }
     }
